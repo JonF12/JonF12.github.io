@@ -16,7 +16,8 @@
     <meta property="og:description" content="An actually good webp to png converter.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://JonF12.github.io/">
-    
+	
+    <script src="heic2any.js"></script>
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
@@ -80,6 +81,10 @@
             font-size: 1.1rem;
             margin-bottom: 40px;
         }
+		
+		.small {
+			font-size: 0.8rem !important;
+		}
         
         .features {
             display: grid;
@@ -168,16 +173,18 @@
     </style>
 </head>
 <body>
-    <h1>An actually good WebP to PNG Converter</h1>
-    <p class="subtitle">Convert your WebP images to PNG format instantly. No internet required. </p>
-
+    <h1>Free WebP to PNG Converter</h1>
+    <p class="subtitle">Convert your WebP images to PNG format instantly, right in your browser. No need to upload files to any server, unlimited usage.</p>
+	
     <div class="drop-zone" id="dropZone">
         <p>Drag & drop a WebP image here or click here to select file</p>
-        <input type="file" id="fileInput" accept="image/webp" style="display: none">
+        <input type="file" id="fileInput" accept="image/webp,image/*" style="display: none">
     </div>
-    <button id="convertBtn" disabled>Convert To PNG</button>
-    
+    <p class="subtitle small"> Also supports HEIC, AVIF and most other common image types to png. </p>
+	<button id="convertBtn" disabled>CONVERT TO PNG</button>
     <img id="preview" alt="Image preview">
+    
+
     <!-- Bottom Ad -->
     <div class="ad-container">
         <ins class="adsbygoogle"
@@ -212,8 +219,7 @@
             dropZone.classList.remove('dragover');
             handleFile(e.dataTransfer.files[0]);
         });
-
-        // Handle click to select
+		
         dropZone.addEventListener('click', () => {
             fileInput.click();
         });
@@ -222,9 +228,23 @@
             handleFile(e.target.files[0]);
         });
 
-        function handleFile(file) {
-            if (!file || !file.type.includes('webp')) {
-                alert('Please select a WebP image file.');
+        async function handleFile(file) {
+			// Check if it's a HEIC file
+			if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+				// Convert HEIC to BLOB
+				const conversionResult = await heic2any({
+					blob: file,
+					toType: "image/png"
+				});
+				
+				// Create a new file from the converted blob
+				file = new File([conversionResult], file.name.replace('.heic', '.png'), {
+					type: 'image/png'
+				});
+			}
+
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
                 return;
             }
 
@@ -236,8 +256,7 @@
             };
             reader.readAsDataURL(file);
         }
-
-        // Convert and download
+		
         convertBtn.addEventListener('click', () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -250,8 +269,8 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                let fileName = fileInput.files[0].name;
-				let newFileName = fileName.replace(/\.webp$/i, '.png');
+				let fileName = fileInput.files[0].name;
+				let newFileName = fileName.replace(/\.(webp|avif|jpg|jpeg|gif|bmp|tiff|svg|heic)$/i, '.png');
 				a.download = newFileName;
                 document.body.appendChild(a);
                 a.click();
