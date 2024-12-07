@@ -250,7 +250,9 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'converted.png';
+                let fileName = fileInput.files[0].name;
+				let newFileName = fileName.replace(/\.webp$/i, '.png');
+				a.download = newFileName;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
